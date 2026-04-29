@@ -53,7 +53,8 @@ def is_valid(url):
         path = parsed.path.lower()
         low_url = url.lower()
 
-        if not netloc.endswith(('ics.uci.edu', 'cs.uci.edu', 'informatics.uci.edu', 'stat.uci.edu')):
+        allowed_domains = ('ics.uci.edu', 'cs.uci.edu', 'informatics.uci.edu', 'stat.uci.edu')
+        if not any(netloc == domain or netloc.endswith("." + domain) for domain in allowed_domains):
             return False
         
         if "calendar" in low_url or "ical" in low_url or "tribe" in low_url:
