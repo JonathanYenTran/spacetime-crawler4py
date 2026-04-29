@@ -1,8 +1,10 @@
 import re
 from urllib.parse import urlparse, urldefrag, urljoin
 from bs4 import BeautifulSoup
+import json
 
 def scraper(url, resp):
+    report_stats(url, resp)
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -76,7 +78,7 @@ def is_valid(url):
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|ps|eps|tex|ppt|pptx|pps|ppsx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
@@ -85,3 +87,32 @@ def is_valid(url):
     except TypeError:
         print ("TypeError for ", parsed)
         raise
+
+def report_stats(url, resp):
+    if resp is None or resp.status != 200 or resp.raw_response is None:
+        return
+
+    clean_url, _ = urldefrag(url)
+
+    if not is_valid(clean_url):
+        return
+
+    soup = BeautifulSoup(resp.raw_response.content, "lxml")
+
+    for tag in soup(["script", "style"]):
+        tag.decompose()
+
+    text = soup.get_text(" ")
+    words = re.findall(r"[a-zA-Z0-9]{3,}", text.lower())
+
+    parsed = urlparse(clean_url)
+
+    data = {
+        "url": clean_url,
+        "subdomain": parsed.netloc.lower(),
+        "word_count": len(words),
+        "words": words
+    }
+
+    with open("crawl_stats.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(data) + "\n")
