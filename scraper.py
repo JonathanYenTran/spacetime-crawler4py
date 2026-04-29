@@ -48,12 +48,28 @@ def is_valid(url):
             return False
         
         netloc = parsed.netloc.lower()
+        path = parsed.path.lower()
+        low_url = url.lower()
+
         if not netloc.endswith(('ics.uci.edu', 'cs.uci.edu', 'informatics.uci.edu', 'stat.uci.edu')):
             return False
         
-        low_url = url.lower()
-        # im sure there are more trap keywords but this is the only one i know so far
-        if "calendar" in low_url:
+        if "calendar" in low_url or "ical" in low_url or "tribe" in low_url:
+            return False
+
+        if "/events/" in path:
+            return False
+
+        if "doku.php" in low_url:
+            return False
+
+        if netloc == "gitlab.ics.uci.edu":
+            return False
+
+        if netloc == "grape.ics.uci.edu":
+            return False
+
+        if netloc == "fano.ics.uci.edu" and path.startswith("/ca/rules/"):
             return False
 
         return not re.match(
