@@ -114,5 +114,5 @@ def report_stats(url, resp):
         "words": words
     }
 
-    with open("crawl_stats.jsonl", "a", encoding="utf-8") as f:
+    with open("report_stats.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(data) + "\n")
